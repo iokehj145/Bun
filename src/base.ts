@@ -30,6 +30,14 @@ export const AddUser = (user: User, id:string) => {
     Users.run(`INSERT INTO users (id, name, password, email) VALUES ('${id}', '${user.name}', '${user.password}', '${user.email}')`);
     console.log(`Add user ${user.name}, email ${user.email}, password ${user.password}`)
 };
+export const logIn = (user: User) => {
+    const TheUser:any = Object(Users.query(`SELECT * FROM users WHERE name = '${user.name}' AND password = '${user.password}'`).all()[0]);
+    Users.run(`UPDATE users SET show = TRUE WHERE id = '${TheUser.id}';`);
+    const answear:any = Users.query(`SELECT id FROM session WHERE user_id = '${TheUser.id}'`).all()[0];
+    if(answear.id){
+        return answear.id;
+    }
+}
 export const GetUser = (ID: string) => {
     return Users.query(`SELECT * FROM users WHERE id = '${ID}'`).get();
 };

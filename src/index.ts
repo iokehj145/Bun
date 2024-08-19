@@ -17,7 +17,6 @@ const lucia = new Lucia(db.adapter, {
 const app = new Elysia()
 .derive( async(context) : Promise<{theUser: db.User | null; session: Session | null}> => {
   const cookieHeader = context.request.headers.get("Cookie") ?? "";
-  console.log(cookieHeader);
   const sessionId = lucia.readSessionCookie(cookieHeader);
   if (!sessionId) {
     return { theUser: null, session: null};
@@ -27,7 +26,6 @@ const app = new Elysia()
     return { theUser: null, session: null};
   }
   const theUser = db.GetUser(user.id) as db.User;
-  console.log(theUser, session);
   return { theUser, session };
 });
 
@@ -60,7 +58,7 @@ try{
     count++;
     const session = await lucia.createSession(userId, {});
     const sessionCookie = lucia.createSessionCookie(session.id);
-    return new Response(null, {status:200, headers:{"Set-Cookie": sessionCookie.serialize()}});
+    return new Response(JSON.stringify(sessionCookie), {status:200});
   }
     catch(theError){
     console.log(theError);
@@ -69,6 +67,26 @@ try{
     }
     return error(500, String(theError));
  }
+})
+app.post("/login", async(request: any) => {
+try{
+  const user : db.User = request.body;
+  if (user.email && user.name && user.password) {
+    return error(400, "Не вірно вказані дані");
+  }
+  const SessionID:string = String(db.logIn(user))
+  if(SessionID){
+    const sessionCookie = lucia.createSessionCookie(SessionID);
+    return new Response(JSON.stringify(sessionCookie), {status:200});
+  }
+  else{
+    return error(400, "Не знайденно користувача");
+  }
+}
+catch (theError) {
+  console.log(theError);
+  return error(500, String(theError));
+}
 })
 app.put("/user", async({theUser, session}) : Promise<Response> => {
   if (theUser && theUser !== undefined && session) {
