@@ -10,7 +10,7 @@ const lucia = new Lucia(db.adapter, {
   sessionExpiresIn: new TimeSpan(2, "w"),
   sessionCookie: {
     attributes: {
-      secure: process.env.PROD === "PROD" ? true : false
+      secure: true
     }
   }
 })
@@ -29,7 +29,7 @@ const app = new Elysia()
   return { theUser, session };
 });
 
-app.use(cors({origin: process.env.PROD === "PROD" ? /https:\/\/the-map-ukr\.netlify\.app$/ : /http:\/\/localhost:\d{4}$/, methods: ['GET', 'POST', 'PUT'], credentials: true}));
+app.use(cors({origin: /https:\/\/the-map-ukr\.netlify\.app$/, methods: ['GET', 'POST', 'PUT'], credentials: true}));
 app.get("/", ({theUser, session}) : Promise<Response> => {
   if (theUser !== null && theUser !== undefined) {
     return Promise.resolve(new Response(JSON.stringify(theUser)));
