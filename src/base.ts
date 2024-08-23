@@ -13,7 +13,7 @@ export interface User {
     password: string;
     email: string;
     show?: boolean;
-}
+};
 export type Checker = 1 | 2 | null;
 export const check = (user: User) => {
     if (Users.query(`SELECT * FROM users WHERE name = '${user.name}'`).all().length > 0) {
@@ -34,9 +34,13 @@ export const logIn = (user: User) => {
     const TheUser:any = Object(Users.query(`SELECT * FROM users WHERE name = '${user.name}' AND password = '${user.password}'`).all()[0]);
     Users.run(`UPDATE users SET show = TRUE WHERE id = '${TheUser.id}';`);
     const answear:any = Users.query(`SELECT id FROM session WHERE user_id = '${TheUser.id}'`).all()[0];
-    if(answear.id){
-        return answear.id;
+    if( answear !== undefined)
+    {   
+        if(answear.id){
+            return answear.id;
+        }
     }
+    else { return undefined }
 }
 export const GetUser = (ID: string) => {
     return Users.query(`SELECT * FROM users WHERE id = '${ID}'`).get();
