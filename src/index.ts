@@ -4,6 +4,7 @@ import * as db from "./base";
 import { Lucia, TimeSpan, generateIdFromEntropySize } from "lucia";
 import dotenv from "dotenv";
 dotenv.config();
+const LinkTheSite:string = process.env.PROD === "PROD" ? "https://mathematical-hayley-something3-7954a83a.koyeb.app/email-verification/" : "http://localhost:8000/email-verification/";
 const lucia = new Lucia(db.adapter, {
   sessionExpiresIn: new TimeSpan(2, "w"),
   sessionCookie: {
@@ -31,7 +32,7 @@ try{
   return Promise.resolve(new Response(null, {status:400}));
 }
 catch (theError) {
-  console.log(theError);
+  console.error(theError);
   return Promise.resolve(new Response(String(theError), {status:500}));
 } })
 // User Register
@@ -54,21 +55,21 @@ try {
     const verificationToken: string = generateIdFromEntropySize(12)
     db.EmailVerify(user, verificationToken)
     
-    const verificationLink: string = "http://localhost:8000/email-verification/" + verificationToken;
+    const verificationLink: string = LinkTheSite + verificationToken;
     const answear: object = {
       access_key: 'fcf48490-ca9d-4eaf-8702-f4bc30bac372', name: 'elysia js server',
       email: user.email,
-      message: "Натисніть на посилання для підтвердження вашої електронної пошти:"+ verificationLink
-  };
-  await fetch('https://api.web3forms.com/submit', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json','Accept': 'application/json'},
-    body: JSON.stringify(answear)
-  });
+      message: "Натисніть на посилання для підтвердження вашої електронної пошти: "+ verificationLink
+    };
+    await fetch('https://api.web3forms.com/submit', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json','Accept': 'application/json'},
+      body: JSON.stringify(answear)
+      });
     return new Response(null, {status:200});
   }
     catch(theError){
-    console.log(theError);
+    console.error(theError);
     if(theError instanceof TypeError){
       return error(405, "Помилка типу даних");
     }
@@ -108,7 +109,7 @@ try{
   }
 }
 catch (theError) {
-  console.log(theError);
+  console.error(theError);
   return error(500, String(theError));
 }
 })

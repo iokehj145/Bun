@@ -62,7 +62,6 @@ export const EmailVerifyCheck = (id: string) : object | null | unknown => {
 }
 export const logIn = (user: User): string | undefined | null => {
     const TheUser: any = Object(Users.query(`SELECT * FROM users WHERE name = '${user.name}' AND password = '${user.password}'`).all()[0]);
-    console.log(!TheUser.name)
     if(!TheUser.name && Users.query(`SELECT * FROM users WHERE name = '${user.name}'`).all().length > 0) {
         return null
     }
