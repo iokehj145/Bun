@@ -2,8 +2,10 @@ import { Database } from "bun:sqlite";
 import { BunSQLiteAdapter } from "@lucia-auth/adapter-sqlite";
 export const Users = new Database("./Users.sqlite", { create: true });
 Users.run(`CREATE TABLE IF NOT EXISTS users (id TEXT NOT NULL PRIMARY KEY, name TEXT, password TEXT, email TEXT, show BOOLEAN NOT NULL DEFAULT TRUE)`);
-Users.run(`CREATE TABLE IF NOT EXISTS session 
-(id TEXT NOT NULL PRIMARY KEY, expires_at DATETIME NOT NULL, user_id TEXT NOT NULL, fresh BOOLEAN NOT NULL DEFAULT TRUE)`);
+Users.run(`CREATE TABLE IF NOT EXISTS session (id TEXT NOT NULL PRIMARY KEY, expires_at DATETIME NOT NULL, 
+    user_id TEXT NOT NULL, fresh BOOLEAN NOT NULL DEFAULT TRUE)`);
+Users.run(`CREATE TABLE IF NOT EXISTS verify (id TEXT NOT NULL PRIMARY KEY, expires_at DATETIME NOT NULL, 
+    user_name TEXT NOT NULL, user_email TEXT NOT NULL, user_password TEXT NOT NULL)`);
 export const adapter = new BunSQLiteAdapter(Users, {
 	user: "users",
 	session: "session"
@@ -26,12 +28,44 @@ export const check = (user: User) => {
         return null;
     }
 };
-export const AddUser = (user: User, id:string) => {
-    Users.run(`INSERT INTO users (id, name, password, email) VALUES ('${id}', '${user.name}', '${user.password}', '${user.email}')`);
+export const AddUser = (user: User) : string => {
+    Users.run(`INSERT INTO users (id, name, password, email) VALUES ((SELECT COALESCE(MAX(id), 0) + 1 FROM users),'${user.name}', '${user.password}', '${user.email}');`);
     console.log(`Add user ${user.name}, email ${user.email}, password ${user.password}`)
+    const result:any = Users.query(`SELECT MAX(id) AS id FROM users`).all();
+    if (typeof result[0].id === "string") {
+        return result[0].id;
+    }
+    else{ return ""; }
 };
-export const logIn = (user: User) => {
-    const TheUser:any = Object(Users.query(`SELECT * FROM users WHERE name = '${user.name}' AND password = '${user.password}'`).all()[0]);
+export const EmailVerify = (user: User, id:string): void => {
+    const expiresAt: string = new Date(Date.now() + 14400000).toISOString().slice(0, 19).replace('T', ' ');
+    Users.run(`INSERT INTO verify (id, expires_at, user_name, user_email, user_password) VALUES ('${id}', '${expiresAt}', '${user.name}', '${user.email}', '${user.password}');`)
+}
+
+export type VerifyRecord2 = {
+    id: string;
+    expiresAt: string;
+    user_name: string;
+    user_email: string;
+    user_password: string;
+}
+
+export const EmailVerifyCheck = (id: string) : object | null | unknown => {
+    const result: Array<object | unknown> = Users.query("SELECT * FROM verify WHERE id = '"+ id +"'").all(id) as VerifyRecord2[];
+    if (result.length === 0 || result[0] === undefined) {
+        return null;
+    }
+    else {
+        Users.run("DELETE FROM verify WHERE id = '"+ id +"';");
+        return result[0] as VerifyRecord2;
+    }
+}
+export const logIn = (user: User): string | undefined | null => {
+    const TheUser: any = Object(Users.query(`SELECT * FROM users WHERE name = '${user.name}' AND password = '${user.password}'`).all()[0]);
+    console.log(!TheUser.name)
+    if(!TheUser.name && Users.query(`SELECT * FROM users WHERE name = '${user.name}'`).all().length > 0) {
+        return null
+    }
     Users.run(`UPDATE users SET show = TRUE WHERE id = '${TheUser.id}';`);
     const answear:any = Users.query(`SELECT id FROM session WHERE user_id = '${TheUser.id}'`).all()[0];
     if( answear !== undefined)
