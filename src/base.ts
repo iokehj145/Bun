@@ -4,7 +4,7 @@ export const Users = new Database("./Users.sqlite", { create: true });
 Users.run(`CREATE TABLE IF NOT EXISTS users (id TEXT NOT NULL PRIMARY KEY, name TEXT, password TEXT, email TEXT, show BOOLEAN NOT NULL DEFAULT TRUE)`);
 Users.run(`CREATE TABLE IF NOT EXISTS session (id TEXT NOT NULL PRIMARY KEY, expires_at DATETIME NOT NULL, 
     user_id TEXT NOT NULL, fresh BOOLEAN NOT NULL DEFAULT TRUE)`);
-Users.run(`CREATE TABLE IF NOT EXISTS verify (id TEXT NOT NULL PRIMARY KEY, expires_at DATETIME NOT NULL, 
+Users.run(`CREATE TABLE IF NOT EXISTS verify (id TEXT NOT NULL PRIMARY KEY, 
     user_name TEXT NOT NULL, user_email TEXT NOT NULL, user_password TEXT NOT NULL)`);
 export const adapter = new BunSQLiteAdapter(Users, {
 	user: "users",
@@ -13,16 +13,23 @@ export const adapter = new BunSQLiteAdapter(Users, {
 export interface User {
     name: string;
     password: string;
-    email: string;
+    email?: string;
     show?: boolean;
+    id?: string;
 };
-export type Checker = 1 | 2 | null;
-export const check = (user: User) => {
+export type Checker = number | null | undefined;
+export const check = (user: User) : Checker => {
     if (Users.query(`SELECT * FROM users WHERE name = '${user.name}'`).all().length > 0) {
         return 1;
     }
     else if (Users.query(`SELECT * FROM users WHERE email = '${user.email}'`).all().length > 0) {
         return 2;
+    }
+    else if (Users.query(`SELECT * FROM verify WHERE user_name = '${user.name}'`).all().length > 0) {
+        return 3;
+    }
+    else if (Users.query(`SELECT * FROM verify WHERE user_email = '${user.email}'`).all().length > 0) {
+        return 4;
     }
     else {
         return null;
@@ -38,20 +45,20 @@ export const AddUser = (user: User) : string => {
     else{ return ""; }
 };
 export const EmailVerify = (user: User, id:string): void => {
-    const expiresAt: string = new Date(Date.now() + 14400000).toISOString().slice(0, 19).replace('T', ' ');
-    Users.run(`INSERT INTO verify (id, expires_at, user_name, user_email, user_password) VALUES ('${id}', '${expiresAt}', '${user.name}', '${user.email}', '${user.password}');`)
+    Users.run(`INSERT INTO verify (id, user_name, user_email, user_password) VALUES ('${id}', '${user.name}', '${user.email}', '${user.password}');`)
 }
-
+export const RemoveVerify = (id: string) : void => {
+    Users.run("DELETE FROM verify WHERE id = '"+ id +"';");
+}
 export type VerifyRecord2 = {
     id: string;
-    expiresAt: string;
     user_name: string;
     user_email: string;
     user_password: string;
 }
 
 export const EmailVerifyCheck = (id: string) : object | null | unknown => {
-    const result: Array<object | unknown> = Users.query("SELECT * FROM verify WHERE id = '"+ id +"'").all(id) as VerifyRecord2[];
+    const result: Array<VerifyRecord2> = Users.query("SELECT * FROM verify WHERE id = '"+ id +"'").all(id) as VerifyRecord2[];
     if (result.length === 0 || result[0] === undefined) {
         return null;
     }
@@ -61,7 +68,7 @@ export const EmailVerifyCheck = (id: string) : object | null | unknown => {
     }
 }
 export const logIn = (user: User): string | undefined | null => {
-    const TheUser: any = Object(Users.query(`SELECT * FROM users WHERE name = '${user.name}' AND password = '${user.password}'`).all()[0]);
+    const TheUser: User = Object(Users.query(`SELECT * FROM users WHERE name = '${user.name}' AND password = '${user.password}'`).all()[0]);
     if(!TheUser.name && Users.query(`SELECT * FROM users WHERE name = '${user.name}'`).all().length > 0) {
         return null
     }
@@ -81,6 +88,6 @@ export const GetUser = (ID: string) => {
 export const GetUsers = () => {
     return Users.query("SELECT * FROM users").all();
 };
-export const IsShow = (id: string) => {
-    return Users.run(`UPDATE users SET show = NOT show WHERE id = '${id}';`);
+export const IsShow = (ID: string) => {
+    return Users.run(`UPDATE users SET show = NOT show WHERE id = '${ID}';`);
 };

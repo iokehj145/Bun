@@ -19,8 +19,9 @@ app.use(cors({origin: process.env.PROD === "PROD" ? /https:\/\/the-map-ukr\.netl
 app.get("/", () : Response => {
   return new Response("Hello world, from Yaric!", {status:200});
 })
+// Using a user session to return user data
 app.post("/", async({body}) : Promise<Response> => {
-try{
+try {
   if (body) {
      const { session, user } = await lucia.validateSession(String(body));
      if (!user){
@@ -36,34 +37,39 @@ catch (theError) {
   return Promise.resolve(new Response(String(theError), {status:500}));
 } })
 // User Register
+let verificationToken: string = "";
 app.post("/user", async({ body }: { body: db.User }) => {
 try {
     const user : db.User = body;
-    if( !user.name || user.name.trim() === ""){
+    if( !user.name.trim()){
       return error(405, "Потрібно вказати Ім'я користувача");
     }
-    else if(!user.email.endsWith("@gmail.com")){
+    else if(!user.email?.endsWith("@gmail.com")){
       return error(405, "Не має електроної адреси!")
     }
     const check: db.Checker = db.check(user);
-    if(check === 1){
-      return error(409, "Користувач з таким Ім'ям вже існує");
+    switch (check) {
+      case 1:
+        return error(409, "Користувач з таким Ім'ям вже існує");
+      case 2:
+        return error(409, "Користувач з такою електронною поштою вже існує");
+      case 3:
+        return error(409, "Користувач з таким Ім'ям вже отримав повідомлення");
+      case 4:
+        return error(409, "Користувач з такою електронною поштою вже отримав повідомлення");
     }
-    else if(check === 2){
-      return error(409, "Користувач з такою електронною поштою вже існує");
-    }
-    const verificationToken: string = generateIdFromEntropySize(12)
+    verificationToken = generateIdFromEntropySize(12)
     db.EmailVerify(user, verificationToken)
     
     const verificationLink: string = LinkTheSite + verificationToken;
     const answear: object = {
-      access_key: 'fcf48490-ca9d-4eaf-8702-f4bc30bac372', name: 'elysia js server',
+      access_key: process.env.EmailKey, name: 'server',
       email: user.email,
       message: "Натисніть на посилання для підтвердження вашої електронної пошти: "+ verificationLink
     };
     await fetch('https://api.web3forms.com/submit', {
       method: 'POST',
-      headers: {'Content-Type': 'application/json','Accept': 'application/json'},
+      headers: {'Content-Type':'application/json','Accept': 'application/json'},
       body: JSON.stringify(answear)
       });
     return new Response(null, {status:200});
@@ -72,16 +78,20 @@ try {
     console.error(theError);
     if(theError instanceof TypeError){
       return error(405, "Помилка типу даних");
-    }
-    return error(500, String(theError));
- }
-})
+    } else{
+      return error(500, String(theError)); }
+  }},
+  {afterHandle (){
+    new Promise(resolve => setTimeout(resolve, 600000))
+    .then(() => db.RemoveVerify(verificationToken));
+  }})
+// token
 app.get("/email-verification/:token",async({params : {token}}) : Promise<Response> => {
-  const result: db.VerifyRecord2 | null = db.EmailVerifyCheck(token) as db.VerifyRecord2 | null;
+   const result: db.VerifyRecord2 | null = db.EmailVerifyCheck(token) as db.VerifyRecord2 | null;
    if(result === null) {
-      return new Response("Не має такого токену", {status:404})
-   }
-   else{
+     return new Response("Посилання не коректне", {status:404})
+    }
+    else{
       const user: db.User = {name : result.user_name, email: result.user_email, password: result.user_password};
       const userId:string= db.AddUser(user);
       await lucia.createSession(userId, {});
@@ -89,13 +99,13 @@ app.get("/email-verification/:token",async({params : {token}}) : Promise<Respons
    }
 })
 // User Login
-app.post("/login", async(request: any) => {
+app.post("/login", async(request: { body: db.User }) => {
 try{
-  const user : db.User = request.body;
-  if (user.email && user.name && user.password) {
+  const { name, password } = request.body;
+  if (!name || !password) {
     return error(400, "Не вірно вказані дані");
   }
-  const test:any = db.logIn(user)
+  const test:any = db.logIn(request.body)
   if (typeof test === "string") {
     const SessionID:string = String(test)
     const sessionCookie = lucia.createSessionCookie(SessionID)
@@ -113,7 +123,7 @@ catch (theError) {
   return error(500, String(theError));
 }
 })
-
+// To switch boolean variable show
 app.put("/user", async({ body }) : Promise<Response> => {
   if (typeof body === "string") {
     const { session, user } = await lucia.validateSession(String(body));
