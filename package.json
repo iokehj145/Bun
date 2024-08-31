@@ -13,6 +13,7 @@
     "@lucia-auth/adapter-sqlite": "^3.0.2",
     "dotenv": "^16.4.5",
     "elysia": "latest",
+    "elysia-ip": "^1.0.7",
     "lucia": "^3.2.0",
     "sqlite": "^5.1.1"
   },

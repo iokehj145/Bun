@@ -1,6 +1,7 @@
 import { Elysia, error} from "elysia";
 import { cors } from "@elysiajs/cors";
 import * as db from "./base";
+import { ip } from "elysia-ip";
 import { Lucia, TimeSpan, generateIdFromEntropySize } from "lucia";
 import dotenv from "dotenv";
 dotenv.config();
@@ -14,7 +15,7 @@ const lucia = new Lucia(db.adapter, {
   }
 })
 const app = new Elysia()
-
+.use(ip())
 app.use(cors({origin: process.env.PROD === "PROD" ? /https:\/\/the-map-ukr\.netlify\.app$/ : /http:\/\/localhost:\d{4}$/, methods: ['GET', 'POST', 'PUT'], credentials: true}));
 app.get("/", () : Response => {
   return new Response("Hello world, from Yaric!", {status:200});
@@ -41,7 +42,7 @@ let verificationToken: string = "";
 app.post("/user", async({ body }: { body: db.User }) => {
 try {
     const user : db.User = body;
-    if( !user.name.trim()){
+    if(!user.name.trim()){
       return error(405, "Потрібно вказати Ім'я користувача");
     }
     else if(!user.email?.endsWith("@gmail.com")){
@@ -95,7 +96,7 @@ app.get("/email-verification/:token",async({params : {token}}) : Promise<Respons
       const user: db.User = {name : result.user_name, email: result.user_email, password: result.user_password};
       const userId:string= db.AddUser(user);
       await lucia.createSession(userId, {});
-      return new Response("Поверніться та увійдіть на сайт", {status:200})
+      return new Response("Поверніться та увійдіть в акаунт на сайті", {status:200})
    }
 })
 // User Login
@@ -137,8 +138,14 @@ app.put("/user", async({ body }) : Promise<Response> => {
     return new Response(null, {status : 400});
   }
 })
-app.get("/users", async() => {
-    return db.GetUsers();
+app.get("/users", async({ip}) => {
+  if (ip === process.env.IP) {
+     return db.GetUsers();
+  }
+  else {
+     console.warn("Tried to get user data: ", ip)
+     return "NO!";
+  }
 })
 
 app.listen(8000, () => {
