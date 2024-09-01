@@ -3,7 +3,6 @@ import { cors } from "@elysiajs/cors";
 import * as db from "./base";
 import { Lucia, TimeSpan, generateIdFromEntropySize } from "lucia";
 import dotenv from "dotenv";
-import { swagger } from '@elysiajs/swagger'
 dotenv.config();
 const LinkTheSite:string = process.env.PROD === "PROD" ? "https://mathematical-hayley-something3-7954a83a.koyeb.app/email-verification/" : "http://localhost:8000/email-verification/";
 const lucia = new Lucia(db.adapter, {
@@ -15,15 +14,7 @@ const lucia = new Lucia(db.adapter, {
   }
 })
 const app = new Elysia()
-.use(swagger({
-  documentation: {
-      info: {
-          title: 'Elysia Documentation',
-          version: '1.0.0'
-      }
-  }
-}))
-// app.use(cors({origin: process.env.PROD === "PROD" ? /https:\/\/the-map-ukr\.netlify\.app$/ : /http:\/\/localhost:\d{4}$/, methods: ['GET', 'POST', 'PUT'], credentials: true}));
+app.use(cors({origin: process.env.PROD === "PROD" ? /https:\/\/the-map-ukr\.netlify\.app$/ : /http:\/\/localhost:\d{4}$/, methods: ['GET', 'POST', 'PUT'], credentials: true}));
 app.get("/", () => 'Hello world, from Yaric!')
 // Using a user session to return user data
 app.post("/", async({body}) : Promise<Response> => {
@@ -91,7 +82,7 @@ try {
     new Promise(resolve => setTimeout(resolve, 600000))
     .then(() => db.RemoveVerify(verificationToken));
   }})
-// token
+// token verification
 app.get("/email-verification/:token",async({params : {token}}) : Promise<Response> => {
    const result: db.VerifyRecord2 | null = db.EmailVerifyCheck(token) as db.VerifyRecord2 | null;
    if(result === null) {
@@ -143,8 +134,8 @@ app.put("/user", async({ body }) : Promise<Response> => {
     return new Response(null, {status : 400});
   }
 })
-app.get("/users", async({ request, set }) => {
-  if (true) {
+app.get("/admin/:token", async({params : {token}}) => {
+  if (process.env.AdminKey && token === process.env.AdminKey) {
      return db.GetUsers();
   }
   else {

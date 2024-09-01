@@ -10,7 +10,6 @@
   "dependencies": {
     "@elysiajs/cors": "^1.0.2",
     "@elysiajs/lucia-auth": "^1.1.0-exp.1",
-    "@elysiajs/swagger": "^1.1.1",
     "@lucia-auth/adapter-sqlite": "^3.0.2",
     "dotenv": "^16.4.5",
     "elysia": "latest",
