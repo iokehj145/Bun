@@ -1,9 +1,9 @@
 import { Elysia, error} from "elysia";
 import { cors } from "@elysiajs/cors";
 import * as db from "./base";
-import { ip } from "elysia-ip";
 import { Lucia, TimeSpan, generateIdFromEntropySize } from "lucia";
 import dotenv from "dotenv";
+import { swagger } from '@elysiajs/swagger'
 dotenv.config();
 const LinkTheSite:string = process.env.PROD === "PROD" ? "https://mathematical-hayley-something3-7954a83a.koyeb.app/email-verification/" : "http://localhost:8000/email-verification/";
 const lucia = new Lucia(db.adapter, {
@@ -15,11 +15,16 @@ const lucia = new Lucia(db.adapter, {
   }
 })
 const app = new Elysia()
-.use(ip())
-app.use(cors({origin: process.env.PROD === "PROD" ? /https:\/\/the-map-ukr\.netlify\.app$/ : /http:\/\/localhost:\d{4}$/, methods: ['GET', 'POST', 'PUT'], credentials: true}));
-app.get("/", () : Response => {
-  return new Response("Hello world, from Yaric!", {status:200});
-})
+.use(swagger({
+  documentation: {
+      info: {
+          title: 'Elysia Documentation',
+          version: '1.0.0'
+      }
+  }
+}))
+// app.use(cors({origin: process.env.PROD === "PROD" ? /https:\/\/the-map-ukr\.netlify\.app$/ : /http:\/\/localhost:\d{4}$/, methods: ['GET', 'POST', 'PUT'], credentials: true}));
+app.get("/", () => 'Hello world, from Yaric!')
 // Using a user session to return user data
 app.post("/", async({body}) : Promise<Response> => {
 try {
@@ -138,12 +143,12 @@ app.put("/user", async({ body }) : Promise<Response> => {
     return new Response(null, {status : 400});
   }
 })
-app.get("/users", async({ip}) => {
-  if (ip === process.env.IP) {
+app.get("/users", async({ request, set }) => {
+  if (true) {
      return db.GetUsers();
   }
   else {
-     console.warn("Tried to get user data: ", ip)
+     console.warn("Tried to get user data: ")
      return "NO!";
   }
 })
