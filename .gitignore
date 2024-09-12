@@ -6,7 +6,6 @@
 
 # testing
 /coverage
-*.sqlite
 # next.js
 /.next/
 /out/
