@@ -20,7 +20,7 @@ export const Main = (app:Elysia)=> {
            return Promise.resolve(new Response("User not found!", {status:400}));
          }
          const theUser = db.GetUser(user.id) as db.User;
-         return Promise.resolve(new Response(JSON.stringify(theUser), { status: 200 }));
+         return Promise.resolve(new Response(theUser.name, { status: 200 }));
       }
       return Promise.resolve(new Response(null, {status:400}));
     }
@@ -122,7 +122,7 @@ export const Main = (app:Elysia)=> {
           return new Response("User not found!", {status : 404});
         }
         db.IsShow(session.userId);
-        return new Response(JSON.stringify(db.GetUser(user.id) as db.User), {status:200});
+        return new Response((db.GetUser(user.id) as db.User).name, {status:200});
       }
       else{
         return new Response(null, {status : 400});
