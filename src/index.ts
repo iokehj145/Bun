@@ -4,7 +4,6 @@ import { errorHandlerMiddleware } from "./middlewares/error.middleware";
 import Admin from "./routes/Admin"
 import Main from "./routes/User";
 import Marks from "./routes/marks";
-import GoogleAuth from "./routes/google";
 export const app = new Elysia()
 // CORS
 app.use(cors({
@@ -15,7 +14,6 @@ errorHandlerMiddleware(app)
 app.get("/", () => "Hello world, from Yaric!")
 // Route handlers
 Main(app)
-GoogleAuth(app)
 Marks(app)
 Admin(app)
 // Server port

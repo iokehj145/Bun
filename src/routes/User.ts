@@ -1,7 +1,7 @@
 import { Elysia, error} from "elysia";
 import * as db from "../DataBase/UsersDb";
 import * as controller from "../Controllers/UserController";
-
+import * as GoogleController from "../Controllers/GoogleController";
 export const User = (app:Elysia)=> {
     // validate session
     app.post("/", controller.ValidateSession);
@@ -11,6 +11,8 @@ export const User = (app:Elysia)=> {
         .then(() => db.RemoveVerify(controller.verificationToken));
       }}
     )
+    // Regesteration via Google
+    app.post('/auth/google', GoogleController.Google);
     // verification
     app.get("/email-verification/:token", controller.VerificationEmail)
     // User Login

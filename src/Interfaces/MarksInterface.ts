@@ -1,16 +1,33 @@
 export interface Mark {
-    id?: string;
+    name: string;
+    position: [number, number];
+    type_group: string;
+    ray: number;
+}
+export interface MarkDB {
+    id: string;
     name: string;
     position_x: number;
     position_y: number;
-    type_group: string;
-    group_name: string;
+    type_group: number;
+    ray: number;
+    image: Blob;
+}
+export interface Image {
+    id: number;
+    image: Blob;
 }
 export interface CreatMark {
     SessionID: string;
-    Mark:Mark
+    Mark: Mark;
+    img: string;
 }
 export interface DeleteMark {
-    SessionID: string;
+    cook: string;
     MarkId: string;
+}
+export interface Getimage {
+    cook: string;
+    Id: number;
+    off?: number;
 }

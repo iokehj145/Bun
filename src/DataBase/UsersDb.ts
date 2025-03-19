@@ -1,6 +1,6 @@
 import * as face from '../Interfaces/UserInterface';
 import { Users } from "../config/db.config";
-
+// Some check
 export const check = (user: face.User) : face.Checker => {
     if (Users.query(`SELECT * FROM users WHERE name = '${user.name}'`).all().length > 0)
          return 1;
@@ -21,6 +21,7 @@ export const AddUser = (user: face.User) : string => {
          return result[0].id;
     else return "";
 };
+// get user for Google auth
 export const GetUserGoogle = (email: string) : face.GoogleUser => {
     try{
     const user: face.User[] = Users.query(`SELECT * FROM users WHERE email = '${email}'`).all() as face.User[];
@@ -34,9 +35,11 @@ export const GetUserGoogle = (email: string) : face.GoogleUser => {
     if (result[0]) return {user: result[0], success : false};
     else return null;
 }
+// Verification
 export const EmailVerify = (user: face.User, id:string): void => {
     Users.run(`INSERT INTO verify (id, user_name, user_email, user_password) VALUES ('${id}', '${user.name}', '${user.email}', '${user.password}');`)
 }
+// Remove verification
 export const RemoveVerify = (id: string) : void => {
     Users.run("DELETE FROM verify WHERE id = '"+ id +"';");
 }
@@ -49,21 +52,21 @@ export const EmailVerifyCheck = (id: string) : object | null | unknown => {
         return result[0] as face.VerifyRecord2;
     }
 }
+// Log in
 export const logIn = (user: face.User): string | undefined | null => {
     const TheUser: face.User = Object(Users.query(`SELECT * FROM users WHERE name = '${user.name}' AND password = '${user.password}'`).all()[0]);
     if(!TheUser.name && Users.query(`SELECT * FROM users WHERE name = '${user.name}'`).all().length > 0)
         return null;
     Users.run(`UPDATE users SET show = TRUE WHERE id = '${TheUser.id}';`);
     const answear:any = Users.query(`SELECT id FROM session WHERE user_id = '${TheUser.id}'`).all()[0];
-    if(answear.id) return answear.id;
+    if(answear?.id) return answear.id;
     else return undefined;
 }
+// Get user by id
 export const GetUser = (ID: string) => {
     return Users.query(`SELECT * FROM users WHERE id = '${ID}'`).get();
 };
-export const GetUsers = () => {
-    return Users.query("SELECT * FROM users").all();
-};
+// Switch show
 export const IsShow = (ID: string) => {
     return Users.run(`UPDATE users SET show = NOT show WHERE id = '${ID}';`);
 };

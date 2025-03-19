@@ -6,12 +6,11 @@ export const adapter = new BunSQLiteAdapter(Users, {
 	user: "users",
 	session: "session"
 });
-
     Users.run(`
         CREATE TABLE IF NOT EXISTS users (
             id TEXT NOT NULL PRIMARY KEY, 
-            name TEXT, 
-            password TEXT, 
+            name TEXT,
+            password TEXT,
             email TEXT, 
             show BOOLEAN NOT NULL DEFAULT TRUE
         );
@@ -30,11 +29,24 @@ export const adapter = new BunSQLiteAdapter(Users, {
     `);
     Marks.run(`
         CREATE TABLE IF NOT EXISTS marks (
-            id TEXT NOT NULL PRIMARY KEY, 
-            name TEXT, 
-            position_x REAL, 
-            position_y REAL, 
-            type_group TEXT, 
-            group_name TEXT
+            id INTEGER NOT NULL PRIMARY KEY, 
+            name TEXT,
+            position_x REAL,
+            position_y REAL,
+            ray INTEGER,
+            type_group INTEGER
         );
+        CREATE TABLE IF NOT EXISTS offers (
+            id INTEGER PRIMARY KEY AUTOINCREMENT, 
+            name TEXT NOT NULL,
+            position_x REAL NOT NULL,
+            position_y REAL NOT NULL,
+            ray INTEGER NOT NULL,
+            type_group INTEGER NOT NULL,
+            image BLOB NOT NULL
+        );
+        CREATE TABLE IF NOT EXISTS images (
+            id INTEGER PRIMARY KEY AUTOINCREMENT, 
+            image BLOB NOT NULL
+        )
     `);

@@ -1,4 +1,5 @@
 import { error } from "elysia";
+import {AdminSession} from './AdminController';
 import * as db from "../DataBase/UsersDb";
 import * as face from '../Interfaces/UserInterface';
 import {generateIdFromEntropySize } from "lucia";
@@ -59,7 +60,10 @@ export const VerificationEmail = async(req: {params : {token: string}}) : Promis
 // Login
 export const LogIn = async({body}: {body: face.User}) => {
   const { name, password } = body;
-  if (!name || !password) return error(400, "Не вірно вказані дані");
+  if (!name || !password)
+    return error(400, "Не вірно вказані дані");
+  else if (name==='Admin' && password === process.env.AdminKey)
+    return AdminSession();
   const test = db.logIn(body)
   if (typeof test === "string") {
     const sessionCookie = lucia.createSessionCookie(test)
