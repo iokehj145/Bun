@@ -1,6 +1,6 @@
 import { Elysia } from "elysia";
 import { cors } from "@elysiajs/cors";
-import { errorHandlerMiddleware } from "./middlewares/error.middleware";
+import { errorHandlerMiddleware } from "./middlewares/ErrorMiddleware";
 import Admin from "./routes/Admin"
 import Main from "./routes/User";
 import Marks from "./routes/marks";
@@ -8,7 +8,7 @@ export const app = new Elysia()
 // CORS
 app.use(cors({
     origin: process.env.PROD === "PROD" ? /https:\/\/the-map-ukr\.netlify\.app$/ : /http:\/\/localhost:\d{4}$/, 
-    methods: ['GET', 'POST', 'PUT']}))
+    methods: ['GET', 'POST', 'PUT', 'DELETE']}))
 errorHandlerMiddleware(app)
 // Hello world
 app.get("/", () => "Hello world, from Yaric!")

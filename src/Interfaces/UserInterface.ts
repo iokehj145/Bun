@@ -5,6 +5,17 @@ export interface User {
     show?: boolean;
     id?: string;
 }
+export interface User2 {
+    name: string;
+    password: string;
+    email: string;
+    show?: boolean;
+    id?: string;
+}
+export interface ChangePassword {
+    cook: string;
+    password: string;
+}
 export interface GetGoogle {
     user: User;
     success: boolean;

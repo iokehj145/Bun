@@ -2,7 +2,7 @@ import * as db from "../DataBase/MarksDb";
 import * as face from '../Interfaces/MarksInterface';
 import lucia from "../config/lucia";
 // create mark
-export const AddMark = async({body}: {body: face.CreatMark}) : Promise<Response>=> {
+export const AddOffer = async({body}: {body: face.CreatMark}) : Promise<Response>=> {
         const { user } = await lucia.validateSession(body.SessionID)
         if(user){
             const IsAdded: boolean = db.AddMark(body.Mark, body.img);
@@ -25,22 +25,22 @@ export const DeleteMark = async({body}: {body: face.DeleteMark}) : Promise<Respo
 }
 // delete offers
 export const DeleteOffer = async({body}: {body: face.DeleteMark}) : Promise<Response> => {
-    const { user } = await lucia.validateSession(body.cook);
-    if (!(user?.id === '-1')) return new Response(null, { status: 400 });
-    db.DeleteOffers(body.MarkId);
-    return new Response(null, { status: 200 });
+    const { user } = await lucia.validateSession(body.cook)
+    if (!(user?.id === '-1')) return new Response(null, { status: 400 })
+    db.DeleteOffers(body.MarkId)
+    return new Response(null, { status: 200 })
 }
 // accept mark
 export const AcceptMark = async({body}: {body: face.DeleteMark}) : Promise<Response> => {
     const { user } = await lucia.validateSession(body.cook);
     if (!(user?.id === '-1')) return new Response(null, { status: 400 });
     db.ToMark(body.MarkId);
-    return new Response(null, { status: 200 });
+    return new Response(null, { status: 200 })
 }
 // get image
 export const GetImage = async ({body}: {body: face.Getimage}) => {  
     const { user } = await lucia.validateSession(body.cook)
     return user
         ? new Response(JSON.stringify({ img: db.GetImage(body.Id, body.off === 1 && user.id === '-1').image }), { status: 200 })  
-        : new Response(null, { status: 400 });
+        : new Response(null, { status: 400 })
 };

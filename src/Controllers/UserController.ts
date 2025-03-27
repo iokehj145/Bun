@@ -11,7 +11,6 @@ const LinkTheSite:string = process.env.PROD === "PROD"
 export const ValidateSession = async({ body }: { body : string }) : Promise<Response> => {
         const sessionid:string = body;
         if (!sessionid ){console.log(sessionid); return new Response(null, { status: 400 })};
-        
         const { user } = await lucia.validateSession(String(sessionid));
         if (!user) return new Response("User not found!", { status: 400 });
 
@@ -20,16 +19,16 @@ export const ValidateSession = async({ body }: { body : string }) : Promise<Resp
 };
 // Register in verify
 export let verificationToken: string = "";
-export const CreatUser = async({body}: {body: face.User}) => {
-    const user : face.User = body;
+export const CreatUser = async({body}: {body: face.User2}) => {
+    const user : face.User2 = body;
     if(!user.name.trim()) return error(405, "Потрібно вказати Ім'я користувача")
     else if(!user.email?.endsWith("@gmail.com")) return error(405, "Не має електроної адреси!")
     const check: face.Checker = db.check(user)
     switch (check) {
       case 1: return error(409, "Користувач з таким Ім'ям вже існує")
       case 2: return error(409, "Користувач з такою електронною поштою вже існує")
-      case 3: return error(409, "Користувач з такою електронною поштою вже отримав повідомлення")
-      case 4: return error(409, "Користувач з таким Ім'ям вже отримав повідомлення")
+      case 3: return error(409, "Користувач з таким Ім'ям вже отримав повідомлення")
+      case 4: return error(409, "Користувач з такою електронною поштою вже отримав повідомлення")
     }
     verificationToken = generateIdFromEntropySize(12)
     db.EmailVerify(user, verificationToken)
@@ -50,10 +49,10 @@ export const CreatUser = async({body}: {body: face.User}) => {
 export const VerificationEmail = async(req: {params : {token: string}}) : Promise<Response> => {
   const result = db.EmailVerifyCheck(req.params.token) as face.VerifyRecord2 | null;     
   if(result === null) return new Response("Посилання не коректне", {status:404})
-  else{
+  else {
     const user: face.User = {name : result.user_name, email: result.user_email, password: result.user_password};
-    const userId:string= db.AddUser(user);
-    await lucia.createSession(userId, {});
+    const userId:string= db.AddUser(user)
+    await lucia.createSession(userId, {})
     return new Response("Поверніться та увійдіть в акаунт на сайті", {status:200})
   }
 }
@@ -83,4 +82,33 @@ export const SwitchShow = async({body}: {body: string}) : Promise<Response> => {
     return new Response((db.GetUser(user.id) as face.User).name, {status:200});
   }
   else return new Response(null, {status : 400});
+}
+// change username
+export const ChangeName = async({body}: {body: string}) => {
+  const bodyData = JSON.parse(body)
+  const {cook, name} = bodyData
+  const { user } = await lucia.validateSession(cook)
+  if (!user) return new Response(null, {status : 404})
+  else {
+    const result = db.ChangeName(user.id, name)
+    if (result) return new Response(null, {status:200})
+    else return new Response(null, {status:400})
+  }
+}
+// Delete user
+export const DeleteUser = async({body}: {body: string}) => {
+  const { user } = await lucia.validateSession(body)
+  if (!user) return new Response(null, {status : 404})
+  else {
+    db.DeleteUser(user.id)
+    return new Response(null, {status:200})
+  }
+}
+export const ChangePassword = async({body}: {body: face.ChangePassword}) => {
+  const {user} = await lucia.validateSession(body.cook)
+  if (!user) return new Response(null, {status : 404})
+  else {
+    db.ChangePassword(user.id, body.password)
+    return new Response(null, {status:200})
+  }
 }

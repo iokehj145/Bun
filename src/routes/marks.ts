@@ -1,17 +1,19 @@
 import { Elysia} from "elysia";
 import * as controller from "../Controllers/MarksController";
 export const Marks = (app:Elysia) => {
-    // creat offer
-    app.post('/mark', controller.AddMark);
-    // creat mark
-    app.post('/acceptmark', controller.AcceptMark);
-    // get marks
-    app.get('/marks/:GroupName', controller.GetMarks);
-    // delete mark
-    app.put('/mark', controller.DeleteMark);
-    // delete offers
-    app.put('/offer', controller.DeleteOffer);
-    // get image
-    app.post('/image', controller.GetImage);
-}
+    return app.group("/mark", (app) =>
+    app
+        // Create an offer
+        .post('/', controller.AddOffer)
+        // Create a mark
+        .post('/acceptmark', controller.AcceptMark)
+        // Get marks
+        .get('/:GroupName', controller.GetMarks)
+        // Remove mark
+        .put('/', controller.DeleteMark)
+        // Remove offer
+        .put('/offer', controller.DeleteOffer)
+        // Get image
+        .post('/image', controller.GetImage)
+)}
 export default Marks;
