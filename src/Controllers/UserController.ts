@@ -5,12 +5,12 @@ import * as face from '../Interfaces/UserInterface';
 import {generateIdFromEntropySize } from "lucia";
 import lucia from "../config/lucia";
 const LinkTheSite:string = process.env.PROD === "PROD" 
-? "https://mathematical-hayley-something3-7954a83a.koyeb.app/email-verification/"
-: "http://localhost:8000/email-verification/";
+? "https://mathematical-hayley-something3-7954a83a.koyeb.app/user/email-verification/"
+: "http://localhost:8000/user/email-verification/";
 // Validate session
 export const ValidateSession = async({ body }: { body : string }) : Promise<Response> => {
         const sessionid:string = body;
-        if (!sessionid ){console.log(sessionid); return new Response(null, { status: 400 })};
+        if (!sessionid ) return new Response(null, { status: 400 });
         const { user } = await lucia.validateSession(String(sessionid));
         if (!user) return new Response("User not found!", { status: 400 });
 
@@ -34,7 +34,7 @@ export const CreatUser = async({body}: {body: face.User2}) => {
     db.EmailVerify(user, verificationToken)
     const verificationLink = LinkTheSite + verificationToken;
         const answear = {
-          access_key: process.env.EmailKey, name: 'server',
+          access_key: process.env.EmailKey, name: 'https://the-map-ukr.netlify.app/',
           email: user.email,
           message: "Натисніть на посилання для підтвердження вашої електронної пошти: "+ verificationLink
         };
@@ -111,4 +111,20 @@ export const ChangePassword = async({body}: {body: face.ChangePassword}) => {
     db.ChangePassword(user.id, body.password)
     return new Response(null, {status:200})
   }
+}
+// Reset user
+export const Reset = async({body}: {body: {email:string}}) => {
+  const User = db.GetUserByEmail(body.email)
+  if (!User) return new Response(null, {status:404})
+  const answear = {
+    access_key: process.env.EmailKey, name: 'https://the-map-ukr.netlify.app/',
+    email: User.email,
+    message: `Облікові дані для входу у систему: логін: ${User.name}, пароль: ${User.password}`
+  };
+  await fetch('https://api.web3forms.com/submit', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json','Accept': 'application/json'},
+    body: JSON.stringify(answear)
+  });
+  return new Response(null, {status:200})
 }

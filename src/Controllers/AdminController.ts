@@ -16,7 +16,7 @@ export const AdminSession = async() => {
         return JSON.stringify(SessionCookie);
     } 
     const Admin = db.CreateAdmin()
-    const session: face.Admin = await lucia.createSession(Admin, {id: process.env.AdminKey});
+    await lucia.createSession(Admin, {id: process.env.AdminKey});
     const SessionCookie = lucia.createSessionCookie(process.env.AdminKey as string)
     return JSON.stringify(SessionCookie);
 }

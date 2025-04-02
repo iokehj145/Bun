@@ -175,3 +175,15 @@ export const DeleteUser = (ID: string): void => {
 export const ChangePassword = (ID: string, password: string) : void => {
     Users.run(`UPDATE users SET password = '${password}' WHERE id = '${ID}';`);
 }
+/**  
+ * Retrieves a user from database by email  
+ *   
+ * @param {string} Email - User's email address  
+ * @returns {face.User2 | null} User object or null if not found/invalid  
+ */
+export const GetUserByEmail = (Email: string): face.User2 | null => {
+    const Query = Users.prepare(`SELECT * FROM users WHERE email = ?`)
+    const User = Query.get(Email) as face.User2 | null;
+    if (User?.password) return User;
+    else return null;
+}
