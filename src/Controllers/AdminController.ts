@@ -29,10 +29,12 @@ export const Search = async(body: {body:face.SearchBody}) => {
     else return new Response(undefined, {status: 400})
 }
 // Delete user
-export const DeleteUser = async(body: {body:face.DeleteUser}) => {
-    const {cook, id} = body.body
-    const { user } = await lucia.validateSession(cook)
-    if (user?.id === '-1')
-        return db.DeleteUser(id)
-    else return new Response(undefined, {status: 400})
+export const DeleteUser = async(body: {body: face.DeleteUser}) => {  
+    const { cook, id } = body.body;
+    const { user } = await lucia.validateSession(cook);
+    if (user?.id === '-1') {
+      db.DeleteUser(id);
+      return new Response(null, {status: 200});  
+    }
+    else return new Response(undefined, {status: 400});
 }

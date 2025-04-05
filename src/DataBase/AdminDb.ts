@@ -50,5 +50,6 @@ export const Search = (option: string, search?: string): face.UserRecord[] | fac
  * @param id - The ID of the user to delete
 */
 export const DeleteUser = (id: string) : void => {
-  Users.run(`DELETE FROM users WHERE id = '${id}';`)
+  Users.run(`DELETE FROM users WHERE id = '${id}';
+             DELETE FROM session WHERE user_id = '${id}'`);
 }
