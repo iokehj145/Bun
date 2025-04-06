@@ -53,3 +53,14 @@ export const DeleteUser = (id: string) : void => {
   Users.run(`DELETE FROM users WHERE id = '${id}';
              DELETE FROM session WHERE user_id = '${id}'`);
 }
+/**  
+ * Retrieves an image from either 'offers' or 'images' table  
+ *   
+ * @param Id - The ID of the record containing the image  
+ * @param off - Flag indicating which table to query (true for 'offers', false for 'images')  
+ * @returns - The image data object
+ */
+export const GetImage = (Id: number, off: boolean) : face.Image => {
+    const query = Marks.query(`SELECT image FROM ${off ? 'offers':'images'} WHERE id = ?`);
+    return query.get(Id) as face.Image;
+}

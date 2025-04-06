@@ -33,4 +33,13 @@ export interface MarkRecord {
     position_y: number | null;  
     ray: number | null;  
     type_group: number | null;  
-}  
+}
+export interface Getimage {
+    cook: string;
+    Id: number;
+    off?: number;
+}
+export interface Image {
+    id: number;
+    image: Blob;
+}

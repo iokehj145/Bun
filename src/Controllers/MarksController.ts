@@ -39,8 +39,5 @@ export const AcceptMark = async({body}: {body: face.DeleteMark}) : Promise<Respo
 }
 // get image
 export const GetImage = async ({body}: {body: face.Getimage}) => {  
-    const { user } = await lucia.validateSession(body.cook)
-    return user
-        ? new Response(JSON.stringify({ img: db.GetImage(body.Id, body.off === 1 && user.id === '-1').image }), { status: 200 })  
-        : new Response(null, { status: 400 })
+    return new Response(JSON.stringify({ img: db.GetImage(body.Id).image }), { status: 200 })  
 };

@@ -9,6 +9,8 @@ export const admin = (app: Elysia) => {
     .post("/search", controller.Search)  
     // Delete user
     .delete("/delete", controller.DeleteUser)
+    // Get image
+    .post("/image", controller.GetImage)
   );
 }
 export default admin;

@@ -27,7 +27,5 @@ export interface DeleteMark {
     MarkId: string;
 }
 export interface Getimage {
-    cook: string;
     Id: number;
-    off?: number;
 }

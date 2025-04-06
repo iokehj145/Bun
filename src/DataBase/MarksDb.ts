@@ -59,13 +59,12 @@ export const ToMark = (ID: string) => {
         INSERT INTO images (id, image) VALUES ('${nextId.next_id}', '${NewMark.image}')`);
 }
 /**  
- * Retrieves an image from either 'offers' or 'images' table  
+ * Retrieves an image from 'images' table 
  *   
  * @param Id - The ID of the record containing the image  
- * @param off - Flag indicating which table to query (true for 'offers', false for 'images')  
  * @returns - The image data object
  */
-export const GetImage = (Id: number, off: boolean) : face.Image => {
-    const query = Marks.prepare(`SELECT image FROM ${off? 'offers':'images'} WHERE id = ?`);
+export const GetImage = (Id: number) : face.Image => {
+    const query = Marks.prepare(`SELECT image FROM images WHERE id = ?`);
     return query.get(Id) as face.Image
 }
