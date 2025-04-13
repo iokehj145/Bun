@@ -4,9 +4,16 @@ import * as db from "../DataBase/UsersDb";
 import * as face from '../Interfaces/UserInterface';
 import {generateIdFromEntropySize } from "lucia";
 import lucia from "../config/lucia";
+import FormData from "form-data";
+import Mailgun from "mailgun.js";
 const LinkTheSite:string = process.env.PROD === "PROD" 
 ? "https://mathematical-hayley-something3-7954a83a.koyeb.app/user/email-verification/"
 : "http://localhost:8000/user/email-verification/";
+const mailgun = new Mailgun(FormData);
+const mg = mailgun.client({
+  username: "api",
+  key: process.env.EmailKey || "",
+});
 // Validate session
 export const ValidateSession = async({ body }: { body : string }) : Promise<Response> => {
         const sessionid:string = body;
@@ -22,7 +29,7 @@ export let verificationToken: string = "";
 export const CreatUser = async({body}: {body: face.User2}) => {
     const user : face.User2 = body;
     if(!user.name.trim()) return error(405, "Потрібно вказати Ім'я користувача")
-    else if(!user.email?.endsWith("@gmail.com")) return error(405, "Не має електроної адреси!")
+    else if (!user.email?.endsWith("@gmail.com")) return error(405, "Не має електроної адреси!")
     const check: face.Checker = db.check(user)
     switch (check) {
       case 1: return error(409, "Користувач з таким Ім'ям вже існує")
@@ -33,17 +40,14 @@ export const CreatUser = async({body}: {body: face.User2}) => {
     verificationToken = generateIdFromEntropySize(12)
     db.EmailVerify(user, verificationToken)
     const verificationLink = LinkTheSite + verificationToken;
-        const answear = {
-          access_key: process.env.EmailKey, name: 'https://the-map-ukr.netlify.app/',
-          email: user.email,
-          message: "Натисніть на посилання для підтвердження вашої електронної пошти: "+ verificationLink
-        };
-        await fetch('https://api.web3forms.com/submit', {
-          method: 'POST',
-          headers: {'Content-Type':'application/json','Accept': 'application/json'},
-          body: JSON.stringify(answear)
-          });
-        return new Response(null, {status:200});
+    // Email send
+    await mg.messages.create(process.env.DOMAIN as string, {
+      from: `<postmaster@${process.env.DOMAIN}>`,
+      to: ["<" + user.email + ">"],
+      subject: "Підтвердження електроної пошти",
+      text: `Вітаємо! Щоб підтвердити вашу електронну адресу, будь ласка, натисніть на посилання: ${verificationLink}`,
+    });
+    return new Response(null, {status:200});
 };
 // Verification
 export const VerificationEmail = async(req: {params : {token: string}}) : Promise<Response> => {
@@ -116,15 +120,11 @@ export const ChangePassword = async({body}: {body: face.ChangePassword}) => {
 export const Reset = async({body}: {body: {email:string}}) => {
   const User = db.GetUserByEmail(body.email)
   if (!User) return new Response(null, {status:404})
-  const answear = {
-    access_key: process.env.EmailKey, name: 'https://the-map-ukr.netlify.app/',
-    email: User.email,
-    message: `Облікові дані для входу у систему: логін: ${User.name}, пароль: ${User.password}`
-  };
-  await fetch('https://api.web3forms.com/submit', {
-    method: 'POST',
-    headers: {'Content-Type':'application/json','Accept': 'application/json'},
-    body: JSON.stringify(answear)
+  await mg.messages.create(process.env.DOMAIN as string, {
+    from: `<postmaster@${process.env.DOMAIN}>`,
+    to: ["<" + User.email + ">"],
+    subject: "Дані для входу у систему",
+    text: `Облікові дані для входу у систему: логін: ${User.name}, пароль: ${User.password}`,
   });
   return new Response(null, {status:200})
 }
