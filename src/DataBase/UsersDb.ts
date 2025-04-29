@@ -1,6 +1,6 @@
 import * as face from '../Interfaces/UserInterface';
 import { Users } from "../config/db.config";
-/**  
+/**
  * Checks if a user or their email already exists in the database  
  *   
  * Return codes:  
@@ -94,7 +94,7 @@ export const RemoveVerify = (id: string) : void => {
  * @param user - The user object containing name, email, and password  
  * @param id - The verification ID to associate with this user  
  */ 
-export const EmailVerifyCheck = (id: string) : object | null | unknown => {
+export const EmailVerifyCheck = (id: string) : face.VerifyRecord2 | null | unknown => {
     const QuerySelect = Users.prepare(`SELECT * FROM verify WHERE id = ?`);
     const QueryRun = Users.prepare(`DELETE FROM verify WHERE id = ?`);
     const result = QuerySelect.all(id) as face.VerifyRecord2[];
