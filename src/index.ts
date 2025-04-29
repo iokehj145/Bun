@@ -18,7 +18,7 @@ export const app = new Elysia()
     }  
   }}))
 .use(cors({
-    origin: process.env.PROD === "PROD" ? /https:\/\/the-map-ukr\.netlify\.app$/ : /http:\/\/localhost:\d{4}$/, 
+    origin: process.env.PROD ? /https:\/\/the-map-ukr\.netlify\.app$/ : /http:\/\/localhost:\d{4}$/, 
     methods: ['GET', 'POST', 'PUT', 'DELETE']}))
 errorHandlerMiddleware(app)
 // Hello world

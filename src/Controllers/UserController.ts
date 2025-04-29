@@ -6,9 +6,7 @@ import {generateIdFromEntropySize } from "lucia";
 import lucia from "../config/lucia";
 import FormData from "form-data";
 import Mailgun from "mailgun.js";
-const LinkTheSite:string = process.env.PROD === "PROD" 
-? "https://mathematical-hayley-something3-7954a83a.koyeb.app/user/email-verification/"
-: "http://localhost:8000/user/email-verification/";
+const LinkTheSite:string = process.env.PROD ?? 'http://localhost:8000' + '/user/email-verification/';
 const mailgun = new Mailgun(FormData);
 const mg = mailgun.client({
   username: "api",
@@ -51,8 +49,8 @@ export const CreatUser = async({body}: {body: face.User2}) => {
 };
 // Verification
 export const VerificationEmail = async(req: {params : {token: string}}) : Promise<Response> => {
-  const result = db.EmailVerifyCheck(req.params.token) as face.VerifyRecord2 | null;     
-  if(result === null) return new Response("Посилання не коректне", {status:404})
+  const result = db.EmailVerifyCheck(req.params.token) as face.VerifyRecord2 | undefined | null;     
+  if(!result) return new Response("Посилання не коректне", {status:404})
   else {
     const user: face.User = {name : result.user_name, email: result.user_email, password: result.user_password};
     const userId:string= db.AddUser(user)
