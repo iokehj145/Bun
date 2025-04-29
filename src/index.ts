@@ -8,9 +8,9 @@ import Marks from "./routes/marks";
 export const app = new Elysia()
 // CORS
 .use(swagger({path: '/docs', documentation: {
-    tags:[{name:'User', description:'User routes'},
-          {name:'Mark', description:'Marks routes'},
-          {name:'Admin', description:'Admin routes'}],  
+    tags:[{name:'User', description:"Кінцеві точки пов'язані з користувачами"},
+          {name:'Mark', description:"Кінцеві точки пов'язані з майданчиками"},
+          {name:'Admin', description:"Кінцеві точки пов'язані з адмін панеллю"}],  
     info: {
       title: 'back-end server API',
       description: "Ця back-end частина створена Ярославом Тюріном ще у 2024 році для проєкту 'пошук майданчиків'.",  
