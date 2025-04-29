@@ -11,6 +11,7 @@
     "@elysiajs/cors": "^1.0.2",
     "@elysiajs/lucia-auth": "^1.1.0-exp.1",
     "@elysiajs/static": "^1.1.1",
+    "@elysiajs/swagger": "^1.2.2",
     "@lucia-auth/adapter-sqlite": "^3.0.2",
     "elysia": "latest",
     "form-data": "^4.0.2",
